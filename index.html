@@ -13,21 +13,52 @@
   <body>
     <div class="container mt-4">
       <div class="row">
-        <div class="col-md-10">
-          <input type="text" class="form-control" id="filtro" placeholder="Filtrar..." onkeyup="filtrar()" />
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Adicionar usuário</h5>
+            </div>
+            <div class="card-body">
+              <form action="" id="formUsuario">
+                <div class="mb-3">
+                  <label for="nome" class="form-label">Nome</label>
+                  <input type="text" class="form-control" id="nome" placeholder="Nome" />
+                </div>
+                <div class="mb-3">
+                  <label for="email" class="form-label">E-mail</label>
+                  <input type="email" class="form-control" id="email" placeholder="E-mail" />
+                </div>
+                <div class="mb-3">
+                  <label for="telefone" class="form-label">Telefone</label>
+                  <input type="text" class="form-control" id="telefone" placeholder="Telefone" />
+                </div>
+                <button type="submit" class="btn btn-primary" onclick="salvarUsuario()">Salvar</button>
+              </form>
+            </div>
+          </div>
         </div>
-        <div class="col-md-2">
-          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"><i class="bi bi-plus-lg"></i> Adicionar</button>
+        <div class="col-md-6">
+          <div class="card">
+            <div class="card-header">
+              <h5 class="card-title">Sincronizar</h5>
+            </div>
+            <div class="card-body">
+              <button type="submit" class="btn btn-primary" onclick="sincronizarDados()">Sincronizar</button>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div class="container mt-4">
       <div class="row">
         <div class="col-md-12">
           <table class="table table-striped table-hover">
             <thead>
               <tr>
-                <th scope="col">Id</th>
                 <th scope="col">Nome</th>
                 <th scope="col">E-mail</th>
+                <th scope="col">Telefone</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
@@ -36,104 +67,66 @@
       </div>
     </div>
 
-    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="exampleModalLabel">Adicionar Usuário</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <form id="formUsuario">
-            <div class="modal-body">
-              <div class="mb-3">
-                <label for="input1" class="form-label">Nome</label>
-                <input type="text" class="form-control mb-2" id="input1" name="nome" required />
-                <label for="input2" class="form-label">E-mail</label>
-                <input type="email" class="form-control mb-2" id="input2" name="email" required />
-                <label for="input3" class="form-label">Senha</label>
-                <input type="password" class="form-control mb-2" id="input3" name="senha" required />
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="submit" class="btn btn-primary">Salvar</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.0-beta1/js/bootstrap.bundle.min.js"></script>
     <script>
-      const urlAPI = 'https://637aba3110a6f23f7f9824ef.mockapi.io/';
-
       let usuarios = [];
 
-      document.addEventListener('DOMContentLoaded', function (event) {
-        document.getElementById('formUsuario').addEventListener('submit', function (e) {
-          e.preventDefault();
-          salvarUsuario(e);
-        });
+      function salvarUsuario() {
+        event.preventDefault();
 
-        buscarUsuarios();
-      });
+        const nome = document.getElementById("nome").value;
+        const email = document.getElementById("email").value;
+        const telefone = document.getElementById("telefone").value;
 
-      function salvarUsuario(event) {
-        const myFormData = new FormData(event.target);
-        const formDataObj = {};
-        myFormData.forEach((value, key) => (formDataObj[key] = value));
+        const usuario = {
+          nome,
+          email,
+          telefone,
+        };
 
-        fetch(urlAPI + '/Usuario', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formDataObj),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            alert('Salvo com sucesso!');
-            location.reload();
-          })
-          .catch((error) => {
-            alerta('Erro:', error);
-          });
+        usuarios.push(usuario);
+        document.getElementById("formUsuario").reset();
+        atualizarTabela();
       }
 
-      function filtrar() {
-        const filtro = document.getElementById('filtro').value;
-        const usuFiltrado = usuarios.filter((u) => u.nome.startsWith(filtro) || u.email.startsWith(filtro) || u.id == filtro);
-        atualizarTabela(usuFiltrado);
-      }
+      function atualizarTabela() {
+        const tbody = document.getElementById("tbody");
 
-      function buscarUsuarios() {
-        fetch(urlAPI + '/Usuario')
-          .then((response) =>
-            response.json().then((data) => {
-              usuarios = data;
-              atualizarTabela(usuarios);
-              console.log(usuarios);
-            })
-          )
-          .catch((erro) => alert('Erro ao buscar os dados'));
-      }
-      
-      function atualizarTabela(array) {
-        const tbody = document.getElementById('tbody');
-        tbody.innerHTML = '';
+        tbody.innerHTML = "";
 
-        array.forEach((item) => {
-          const tr = document.createElement('tr');
-          const tdId = document.createElement('td');
-          const tdNome = document.createElement('td');
-          const tdEmail = document.createElement('td');
-          tdId.innerHTML = item.id;
-          tdNome.innerHTML = item.nome;
-          tdEmail.innerHTML = item.email;
-          tr.appendChild(tdId);
-          tr.appendChild(tdNome);
-          tr.appendChild(tdEmail);
+        usuarios.forEach((usuario) => {
+          const tr = document.createElement("tr");
+
+          tr.innerHTML = `
+            <td>${usuario.nome}</td>
+            <td>${usuario.email}</td>
+            <td>${usuario.telefone}</td>
+          `;
+
           tbody.appendChild(tr);
+        });
+      }
+
+      // Add usuarops array to https://637aba3110a6f23f7f9824ef.mockapi.io/Usuarios
+
+      function sincronizarDados() {
+        const url = "https://637aba3110a6f23f7f9824ef.mockapi.io/Usuario";
+
+        usuarios.forEach((usuario) => {
+          fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(usuario),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              alert("Dados sincronizados com sucesso!");
+            })
+            .catch((error) => {
+              alert("Erro ao sincronizar os dados! O erro foi: " + error);
+            });
         });
       }
     </script>
